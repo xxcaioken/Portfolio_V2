@@ -1,0 +1,41 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio / Rider
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# NuGet
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+*.nupkg
+
+# Others
+*.cache
+*.tmp
+*.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Publish outputs
+wwwroot/
+/dist/
+/node_modules/
+
+# Dotnet tools
+.dotnet-tools/
