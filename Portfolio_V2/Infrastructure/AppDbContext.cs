@@ -14,10 +14,11 @@ namespace Portfolio_V2.Infrastructure
 				entity.ToTable("users");
 				entity.HasKey(u => u.Id);
 				entity.Property(u => u.Id).HasColumnName("id");
-				entity.Property(u => u.Username).HasMaxLength(100).IsRequired().HasColumnName("username");
-				entity.Property(u => u.PasswordHash).IsRequired().HasColumnName("password_hash");
-				entity.Property(u => u.PasswordSalt).IsRequired().HasColumnName("password_salt");
-				entity.Property(u => u.CreatedAt).HasColumnName("created_at");
+				entity.Property(u => u.Username).HasMaxLength(100).IsRequired().HasColumnName("username").HasConversion<string>();
+				entity.Property(u => u.PasswordHash).IsRequired().HasColumnName("password_hash").HasConversion<string>();
+				entity.Property(u => u.PasswordSalt).IsRequired().HasColumnName("password_salt").HasConversion<string>();
+				entity.Property(u => u.Role).IsRequired().HasColumnName("role").HasConversion<string>();
+				entity.Property(u => u.CreatedAt).HasColumnName("created_at").HasConversion<DateTime>();
 				entity.HasIndex(u => u.Username).IsUnique();
 			});
 		}

@@ -73,6 +73,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<Portfolio_V2.Infrastructure.AppDbContext>();
     db.Database.EnsureCreated();
+    await Portfolio_V2.Infrastructure.Seed.DatabaseSeeder.SeedAsync(db);
+
 }
 
 app.Run();
