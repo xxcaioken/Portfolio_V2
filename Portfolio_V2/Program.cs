@@ -62,6 +62,7 @@ builder.Services.AddDbContext<Portfolio_V2.Infrastructure.AppDbContext>(options 
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IUserRepository, Portfolio_V2.Infrastructure.Repositories.UserRepository>();
 builder.Services.AddScoped<Portfolio_V2.Application.Services.IAuthService, Portfolio_V2.Application.Services.AuthService>();
 builder.Services.AddScoped<Portfolio_V2.Application.Services.ITokenService, Portfolio_V2.Application.Services.TokenService>();
+builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IExperienceRepository, Portfolio_V2.Infrastructure.Repositories.ExperienceRepository>();
 
 builder.Services.AddOpenApi();
 

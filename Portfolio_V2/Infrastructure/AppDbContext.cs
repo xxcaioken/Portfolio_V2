@@ -6,6 +6,7 @@ namespace Portfolio_V2.Infrastructure
 	public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 	{
         public DbSet<User> Users => Set<User>();
+        public DbSet<ExperienceItem> Experiences => Set<ExperienceItem>();
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -21,6 +22,19 @@ namespace Portfolio_V2.Infrastructure
 				entity.Property(u => u.CreatedAt).HasColumnName("created_at").HasConversion<DateTime>();
 				entity.HasIndex(u => u.Username).IsUnique();
 			});
+
+            modelBuilder.Entity<ExperienceItem>(entity =>
+            {
+                entity.ToTable("experiences");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Company).IsRequired().HasMaxLength(150).HasColumnName("company");
+                entity.Property(e => e.Role).IsRequired().HasMaxLength(120).HasColumnName("role");
+                entity.Property(e => e.Period).IsRequired().HasMaxLength(120).HasColumnName("period");
+                entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            });
 		}
 	}
 }
