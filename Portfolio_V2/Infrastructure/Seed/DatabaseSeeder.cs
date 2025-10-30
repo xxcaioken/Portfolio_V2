@@ -10,13 +10,14 @@ namespace Portfolio_V2.Infrastructure.Seed
 		{
 			if (!await db.Users.AnyAsync())
 			{
-				var (hash, salt) = AuthService.CreatePasswordHash("admin123");
-				var admin = new User
+				(string hash, string salt) = AuthService.CreatePasswordHash("admin123");
+				User admin = new()
 				{
 					Id = Guid.NewGuid(),
 					Username = "admin",
 					PasswordHash = hash,
-					PasswordSalt = salt
+					PasswordSalt = salt,
+					Role = Role.Admin
 				};
 				db.Users.Add(admin);
 				await db.SaveChangesAsync();

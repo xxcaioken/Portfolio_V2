@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio_V2.Application.Services;
 using Portfolio_V2.Contracts;
+using Portfolio_V2.Domain.Models;
 
 namespace Portfolio_V2.Controllers
 {
@@ -21,13 +23,19 @@ namespace Portfolio_V2.Controllers
 				return BadRequest(new { error = "Credenciais inválidas" });
 			}
 
-			var user = await _authService.ValidateUserAsync(request.Username, request.Password);
-			if (user == null)
+			User? user = await _authService.ValidateUserAsync(request.Username, request.Password);
+			if (user is null)
 			{
 				return Unauthorized();
 			}
+			
+			List<Claim> extraClaims = new()
+            {
+				new Claim(ClaimTypes.Name, user.Username),
+				new Claim(ClaimTypes.Role, user.Role.ToString()),
+			};
 
-			var (token, expiresAt) = _tokenService.CreateToken(user.Username);
+			(string token, DateTime expiresAt) = _tokenService.CreateToken(user!.Username,  [..extraClaims]);
 			return Ok(new AuthResponse(token, expiresAt));
 		}
 
@@ -35,8 +43,8 @@ namespace Portfolio_V2.Controllers
 		[Authorize]
 		public ActionResult<object> Me()
 		{
-			var name = User.Identity?.Name ?? "unknown";
-			var claims = User.Claims.Select(c => new { c.Type, c.Value });
+			string name = User.Identity?.Name ?? "unknown";
+			IEnumerable<object> claims = User.Claims.Select(c => new { c.Type, c.Value });
 			return Ok(new { name, claims });
 		}
 	}

@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-var jwtSection = builder.Configuration.GetSection("Authentication:Jwt");
-var issuer = jwtSection.GetValue<string>("Issuer") ?? string.Empty;
-var audience = jwtSection.GetValue<string>("Audience") ?? string.Empty;
-var secret = jwtSection.GetValue<string>("Secret") ?? string.Empty;
+IConfigurationSection jwtSection = builder.Configuration.GetSection("Authentication:Jwt");
+string issuer = jwtSection.GetValue<string>("Issuer") ?? string.Empty;
+string audience = jwtSection.GetValue<string>("Audience") ?? string.Empty;
+string secret = jwtSection.GetValue<string>("Secret") ?? string.Empty;
 
 if (secret.Length < 32)
 {
@@ -19,7 +19,7 @@ if (string.IsNullOrWhiteSpace(issuer) || string.IsNullOrWhiteSpace(audience))
     throw new InvalidOperationException("JWT Issuer/Audience não configurados.");
 }
 
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
 // Authentication and Authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -62,7 +62,7 @@ builder.Services.AddScoped<Portfolio_V2.Application.Services.ITokenService, Port
 
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
@@ -80,9 +80,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
+using (IServiceScope scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<Portfolio_V2.Infrastructure.AppDbContext>();
+    Portfolio_V2.Infrastructure.AppDbContext db = scope.ServiceProvider.GetRequiredService<Portfolio_V2.Infrastructure.AppDbContext>();
     if (app.Environment.IsDevelopment())
         db.Database.EnsureCreated();
     else

@@ -12,27 +12,27 @@ namespace Portfolio_V2.Application.Services
 
         public (string Token, DateTime ExpiresAt) CreateToken(string username, Claim[]? extraClaims = null)
 		{
-			var jwtSection = _configuration.GetSection("Authentication:Jwt");
-			var issuer = jwtSection.GetValue<string>("Issuer");
-			var audience = jwtSection.GetValue<string>("Audience");
-			var secret = jwtSection.GetValue<string>("Secret") ?? string.Empty;
-			var lifetimeMinutes = jwtSection.GetValue<int>("TokenLifetimeMinutes");
+			IConfigurationSection jwtSection = _configuration.GetSection("Authentication:Jwt");
+			string issuer = jwtSection.GetValue<string>("Issuer") ?? string.Empty;
+			string audience = jwtSection.GetValue<string>("Audience") ?? string.Empty;
+			string secret = jwtSection.GetValue<string>("Secret") ?? string.Empty;
+			int lifetimeMinutes = jwtSection.GetValue<int>("TokenLifetimeMinutes");
 
-			var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-			var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+			SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+			SigningCredentials creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
-			var claims = new List<Claim>
-			{
-				new Claim(ClaimTypes.Name, username),
+			List<Claim> claims =
+            [
+                new Claim(ClaimTypes.Name, username),
 				new Claim(ClaimTypes.NameIdentifier, username)
-			};
+			];
 			if (extraClaims != null)
 			{
 				claims.AddRange(extraClaims);
 			}
 
-			var expiresAt = DateTime.UtcNow.AddMinutes(lifetimeMinutes > 0 ? lifetimeMinutes : 60);
-			var token = new JwtSecurityToken(
+			DateTime expiresAt = DateTime.UtcNow.AddMinutes(lifetimeMinutes > 0 ? lifetimeMinutes : 60);
+			JwtSecurityToken token = new(
 				issuer: issuer,
 				audience: audience,
 				claims: claims,
@@ -40,7 +40,7 @@ namespace Portfolio_V2.Application.Services
 				signingCredentials: creds
 			);
 
-			var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+			string tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 			return (tokenString, expiresAt);
 		}
 	}
