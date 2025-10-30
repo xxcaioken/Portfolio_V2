@@ -7,7 +7,8 @@ namespace Portfolio_V2.Contracts
         Guid Id,
         string Company,
         string Role,
-        string Period,
+        string StartDate,
+        string? EndDate,
         string[] Bullets,
         DateTime CreatedAt,
         DateTime? UpdatedAt
@@ -17,8 +18,9 @@ namespace Portfolio_V2.Contracts
     {
         [Required, MaxLength(150)] public string Company { get; set; } = string.Empty;
         [Required, MaxLength(120)] public string Role { get; set; } = string.Empty;
-        [Required, MaxLength(120)] public string Period { get; set; } = string.Empty;
-        [MinLength(0)] public string[] Bullets { get; set; } = Array.Empty<string>();
+        [Required] public string StartDate { get; set; } = string.Empty; 
+        public string? EndDate { get; set; } = null;
+        [MinLength(0)] public string[] Bullets { get; set; } = [];
     }
 
     public class UpdateExperienceRequest : CreateExperienceRequest { }

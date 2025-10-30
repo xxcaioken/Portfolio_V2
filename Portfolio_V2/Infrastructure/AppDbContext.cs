@@ -30,7 +30,8 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.Company).IsRequired().HasMaxLength(150).HasColumnName("company");
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(120).HasColumnName("role");
-                entity.Property(e => e.Period).IsRequired().HasMaxLength(120).HasColumnName("period");
+                entity.Property(e => e.StartDate).HasColumnName("start_date").HasColumnType("date");
+                entity.Property(e => e.EndDate).HasColumnName("end_date").HasColumnType("date");
                 entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
