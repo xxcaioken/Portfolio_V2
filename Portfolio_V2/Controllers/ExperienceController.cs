@@ -20,7 +20,7 @@ namespace Portfolio_V2.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<List<ExperienceResponse>>> List()
         {
-            var list = await _repo.ListAsync();
+            List<ExperienceItem> list = await _repo.ListAsync();
             return Ok(list.Select(e => new ExperienceResponse(e.Id, e.Company, e.Role, e.Period, e.Bullets, e.CreatedAt, e.UpdatedAt)));
         }
 
@@ -28,7 +28,7 @@ namespace Portfolio_V2.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<ExperienceResponse>> Get(Guid id)
         {
-            var e = await _repo.GetAsync(id);
+            ExperienceItem? e = await _repo.GetAsync(id);
             if (e is null) return NotFound();
             return Ok(new ExperienceResponse(e.Id, e.Company, e.Role, e.Period, e.Bullets, e.CreatedAt, e.UpdatedAt));
         }
@@ -37,7 +37,7 @@ namespace Portfolio_V2.Controllers
         [Authorize(Policy = "Admin")]
         public async Task<ActionResult<ExperienceResponse>> Create([FromBody] CreateExperienceRequest req)
         {
-            var e = new ExperienceItem
+            ExperienceItem e = new ExperienceItem
             {
                 Company = req.Company.Trim(),
                 Role = req.Role.Trim(),
@@ -54,7 +54,7 @@ namespace Portfolio_V2.Controllers
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateExperienceRequest req)
         {
-            var e = await _repo.GetAsync(id);
+            ExperienceItem? e = await _repo.GetAsync(id);
             if (e is null) return NotFound();
             e.Company = req.Company.Trim();
             e.Role = req.Role.Trim();
@@ -70,7 +70,7 @@ namespace Portfolio_V2.Controllers
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var e = await _repo.GetAsync(id);
+            ExperienceItem? e = await _repo.GetAsync(id);
             if (e is null) return NotFound();
             await _repo.DeleteAsync(e);
             await _repo.SaveChangesAsync();
