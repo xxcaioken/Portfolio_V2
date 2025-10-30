@@ -29,13 +29,13 @@ namespace Portfolio_V2.Controllers
 				return Unauthorized();
 			}
 			
-			List<Claim> extraClaims = new()
-            {
+			Claim[] extraClaims =
+            [
 				new Claim(ClaimTypes.Name, user.Username),
 				new Claim(ClaimTypes.Role, user.Role.ToString()),
-			};
+			];
 
-			(string token, DateTime expiresAt) = _tokenService.CreateToken(user!.Username,  [..extraClaims]);
+			(string token, DateTime expiresAt) = _tokenService.CreateToken(user!.Username, extraClaims);
 			return Ok(new AuthResponse(token, expiresAt));
 		}
 

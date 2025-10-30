@@ -11,15 +11,12 @@ namespace Portfolio_V2.Infrastructure.Seed
 			if (!await db.Users.AnyAsync())
 			{
 				(string hash, string salt) = AuthService.CreatePasswordHash("admin123");
-				User admin = new()
-				{
-					Id = Guid.NewGuid(),
-					Username = "admin",
-					PasswordHash = hash,
-					PasswordSalt = salt,
-					Role = Role.Admin
-				};
-				db.Users.Add(admin);
+				List<User> users =
+                [
+                    new User { Id = Guid.NewGuid(), Username = "admin", PasswordHash = hash, PasswordSalt = salt, Role = Role.Admin },
+					new User { Id = Guid.NewGuid(), Username = "user", PasswordHash = hash, PasswordSalt = salt, Role = Role.User }
+				];
+				db.Users.AddRange(users);
 				await db.SaveChangesAsync();
 			}
 		}

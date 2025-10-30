@@ -40,7 +40,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
-builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy => policy.RequireRole(Portfolio_V2.Domain.Models.Role.Admin.ToString()));
+
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddCors(opt =>
