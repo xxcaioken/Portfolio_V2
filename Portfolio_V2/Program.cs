@@ -1,16 +1,34 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtSection = builder.Configuration.GetSection("Authentication:Jwt");
+var issuer = jwtSection.GetValue<string>("Issuer") ?? string.Empty;
+var audience = jwtSection.GetValue<string>("Audience") ?? string.Empty;
+var secret = jwtSection.GetValue<string>("Secret") ?? string.Empty;
+
+if (secret.Length < 32)
+{
+    throw new InvalidOperationException("JWT Secret inválido. Defina um segredo com pelo menos 32 caracteres via variáveis de ambiente ou Secret Manager.");
+}
+if (string.IsNullOrWhiteSpace(issuer) || string.IsNullOrWhiteSpace(audience))
+{
+    throw new InvalidOperationException("JWT Issuer/Audience não configurados.");
+}
+
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+
 // Authentication and Authorization
-builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var jwtSection = builder.Configuration.GetSection("Authentication:Jwt");
-        var issuer = jwtSection.GetValue<string>("Issuer");
-        var audience = jwtSection.GetValue<string>("Audience");
-        var secret = jwtSection.GetValue<string>("Secret");
-
-        var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret ?? string.Empty));
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.SaveToken = false;
+        options.IncludeErrorDetails = builder.Environment.IsDevelopment();
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -18,11 +36,20 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
             ValidateIssuerSigningKey = true,
             ValidIssuer = issuer,
             ValidAudience = audience,
-            IssuerSigningKey = key,
+            IssuerSigningKey = signingKey,
             ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
+
+builder.Services.AddDbContext<Portfolio_V2.Infrastructure.AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
+
+builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IUserRepository, Portfolio_V2.Infrastructure.Repositories.UserRepository>();
+builder.Services.AddScoped<Portfolio_V2.Application.Services.IAuthService, Portfolio_V2.Application.Services.AuthService>();
+builder.Services.AddScoped<Portfolio_V2.Application.Services.ITokenService, Portfolio_V2.Application.Services.TokenService>();
 
 builder.Services.AddOpenApi();
 
@@ -32,65 +59,20 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+else
+{
+    app.UseHsts();
+}
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 
-app.MapPost("/auth/login", (LoginRequest request, IConfiguration config) =>
+using (var scope = app.Services.CreateScope())
 {
-    var expectedUser = config.GetValue<string>("Authentication:DemoUser:Username");
-    var expectedPass = config.GetValue<string>("Authentication:DemoUser:Password");
-
-    if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
-    {
-        return Results.BadRequest(new { error = "Credenciais inválidas" });
-    }
-
-    if (!string.Equals(request.Username, expectedUser, StringComparison.Ordinal) ||
-        !string.Equals(request.Password, expectedPass, StringComparison.Ordinal))
-    {
-        return Results.Unauthorized();
-    }
-
-    var jwtSection = config.GetSection("Authentication:Jwt");
-    var issuer = jwtSection.GetValue<string>("Issuer");
-    var audience = jwtSection.GetValue<string>("Audience");
-    var secret = jwtSection.GetValue<string>("Secret");
-    var lifetimeMinutes = jwtSection.GetValue<int>("TokenLifetimeMinutes");
-
-    var signingKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret ?? string.Empty));
-    var creds = new Microsoft.IdentityModel.Tokens.SigningCredentials(signingKey, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256);
-
-    var claims = new[]
-    {
-        new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, request.Username),
-        new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, request.Username)
-    };
-
-    var expiresAt = DateTime.UtcNow.AddMinutes(lifetimeMinutes > 0 ? lifetimeMinutes : 60);
-
-    var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
-        issuer: issuer,
-        audience: audience,
-        claims: claims,
-        expires: expiresAt,
-        signingCredentials: creds
-    );
-
-    var tokenString = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token);
-    return Results.Ok(new { token = tokenString, expiresAt });
-})
-.WithName("Login");
-
-app.MapGet("/auth/me", (System.Security.Claims.ClaimsPrincipal user) =>
-{
-    var name = user.Identity?.Name ?? "unknown";
-    var claims = user.Claims.Select(c => new { c.Type, c.Value });
-    return Results.Ok(new { name, claims });
-})
-.RequireAuthorization()
-.WithName("Me");
+    var db = scope.ServiceProvider.GetRequiredService<Portfolio_V2.Infrastructure.AppDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.Run();
-
-internal record LoginRequest(string Username, string Password);
