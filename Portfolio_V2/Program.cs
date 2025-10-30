@@ -42,6 +42,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("DevCors", p => p
+        .WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
 
 builder.Services.AddDbContext<Portfolio_V2.Infrastructure.AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -55,8 +64,10 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
+    app.UseCors("DevCors");
     app.MapOpenApi();
 }
 else
@@ -72,7 +83,10 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<Portfolio_V2.Infrastructure.AppDbContext>();
-    db.Database.EnsureCreated();
+    if (app.Environment.IsDevelopment())
+        db.Database.EnsureCreated();
+    else
+        db.Database.Migrate();
     await Portfolio_V2.Infrastructure.Seed.DatabaseSeeder.SeedAsync(db);
 
 }
