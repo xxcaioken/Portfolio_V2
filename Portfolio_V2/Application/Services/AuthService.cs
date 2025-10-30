@@ -16,20 +16,20 @@ namespace Portfolio_V2.Application.Services
 
         public async Task<User?> ValidateUserAsync(string username, string password)
 		{
-			var user = await _userRepository.GetByUsernameAsync(username);
-			if (user == null)
+			User? user = await _userRepository.GetByUsernameAsync(username);
+			if (user is null)
 			{
 				return null;
 			}
 
-			var computedHash = HashPassword(password, Convert.FromBase64String(user.PasswordSalt));
+			byte[] computedHash = HashPassword(password, Convert.FromBase64String(user.PasswordSalt));
 			return TimingSafeEquals(Convert.FromBase64String(user.PasswordHash), computedHash) ? user : null;
 		}
 
 		public static (string Hash, string Salt) CreatePasswordHash(string password)
 		{
-			var salt = RandomNumberGenerator.GetBytes(SaltSize);
-			var hash = HashPassword(password, salt);
+			byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
+			byte[] hash = HashPassword(password, salt);
 			return (Convert.ToBase64String(hash), Convert.ToBase64String(salt));
 		}
 
