@@ -14,7 +14,7 @@ namespace Portfolio_V2.Contracts
         string Email,
         string Linkedin,
         string? Github,
-        string? AvatarUrl,
+        string AvatarUrl,
         string? FooterNote,
         SocialLinkDto[] Socials
     );
@@ -29,7 +29,7 @@ namespace Portfolio_V2.Contracts
         [MaxLength(200), EmailAddress] public string Email { get; set; } = string.Empty;
         [MaxLength(300), Url] public string Linkedin { get; set; } = string.Empty;
         [MaxLength(300), Url] public string? Github { get; set; }
-        [MaxLength(500), Url] public string? AvatarUrl { get; set; }
+        [MaxLength(500)] public string? AvatarUrl { get; set; }
         [MaxLength(300)] public string? FooterNote { get; set; }
         public SocialLinkDto[] Socials { get; set; } = Array.Empty<SocialLinkDto>();
     }
