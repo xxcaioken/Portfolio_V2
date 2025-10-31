@@ -63,6 +63,7 @@ builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IUserReposit
 builder.Services.AddScoped<Portfolio_V2.Application.Services.IAuthService, Portfolio_V2.Application.Services.AuthService>();
 builder.Services.AddScoped<Portfolio_V2.Application.Services.ITokenService, Portfolio_V2.Application.Services.TokenService>();
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IKeyTaskRepository, Portfolio_V2.Infrastructure.Repositories.KeyTaskRepository>();
+builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IAboutRepository, Portfolio_V2.Infrastructure.Repositories.AboutRepository>();
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IExperienceRepository, Portfolio_V2.Infrastructure.Repositories.ExperienceRepository>();
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IHabilityRepository, Portfolio_V2.Infrastructure.Repositories.HabilityRepository>();
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IAditionalInfoRepository, Portfolio_V2.Infrastructure.Repositories.AditionalInfoRepository>();
@@ -83,8 +84,10 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 app.MapControllers();
 
 using (IServiceScope scope = app.Services.CreateScope())

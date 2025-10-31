@@ -12,6 +12,8 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<AditionalInfoItem> AditionalInfos => Set<AditionalInfoItem>();
         public DbSet<AditionalInfoBullet> AditionalInfoBullets => Set<AditionalInfoBullet>();
         public DbSet<KeyTaskTechnology> KeyTaskTechnologies => Set<KeyTaskTechnology>();
+        public DbSet<AboutInfo> AboutInfos => Set<AboutInfo>();
+        public DbSet<SocialLink> SocialLinks => Set<SocialLink>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -113,6 +115,40 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(t => t.KeyTaskBulletId).HasColumnName("keytask_id");
                 entity.Property(t => t.Technology).IsRequired().HasMaxLength(120).HasColumnName("technology");
                 entity.Property(t => t.TechnologyBadge).HasColumnName("technologyBadge");
+            });
+
+            modelBuilder.Entity<AboutInfo>(e =>
+            {
+                e.ToTable("about_info");
+                e.HasKey(a => a.Id);
+                e.Property(a => a.Id).HasColumnName("id");
+                e.Property(a => a.Name).HasMaxLength(150).IsRequired().HasColumnName("name");
+                e.Property(a => a.Title).HasMaxLength(150).IsRequired().HasColumnName("title");
+                e.Property(a => a.Summary).HasMaxLength(2000).HasColumnName("summary");
+                e.Property(a => a.Location).HasMaxLength(150).HasColumnName("location");
+                e.Property(a => a.Phone).HasMaxLength(50).HasColumnName("phone");
+                e.Property(a => a.Email).HasMaxLength(200).HasColumnName("email");
+                e.Property(a => a.Linkedin).HasMaxLength(300).HasColumnName("linkedin");
+                e.Property(a => a.Github).HasMaxLength(300).HasColumnName("github");
+                e.Property(a => a.AvatarUrl).HasMaxLength(500).HasColumnName("avatar_url");
+                e.Property(a => a.FooterNote).HasMaxLength(300).HasColumnName("footer_note");
+                e.Property(a => a.CreatedAt).HasColumnName("created_at");
+                e.Property(a => a.UpdatedAt).HasColumnName("updated_at");
+                e.HasMany(a => a.Socials)
+                 .WithOne(s => s.About!)
+                 .HasForeignKey(s => s.AboutInfoId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SocialLink>(e =>
+            {
+                e.ToTable("about_social_links");
+                e.HasKey(s => s.Id);
+                e.Property(s => s.Id).HasColumnName("id");
+                e.Property(s => s.AboutInfoId).HasColumnName("about_id");
+                e.Property(s => s.Label).HasMaxLength(100).IsRequired().HasColumnName("label");
+                e.Property(s => s.Url).HasMaxLength(500).IsRequired().HasColumnName("url");
+                e.Property(s => s.IconKey).HasMaxLength(120).HasColumnName("icon_key");
             });
         }
 	}
