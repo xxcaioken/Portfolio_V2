@@ -14,13 +14,14 @@ namespace Portfolio_V2.Infrastructure.Repositories
         public async Task<List<AditionalInfoItem>> ListAsync()
         {
             return await _db.AditionalInfos.AsNoTracking()
+                .Include(a => a.Bullets)
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
         }
 
         public async Task<AditionalInfoItem?> GetAsync(Guid id)
         {
-            return await _db.AditionalInfos.FindAsync(id);
+            return await _db.AditionalInfos.Include(a => a.Bullets).FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task AddAsync(AditionalInfoItem item)

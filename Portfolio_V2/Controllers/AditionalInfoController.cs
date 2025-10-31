@@ -21,7 +21,7 @@ namespace Portfolio_V2.Controllers
             return Ok(list.Select(MapResponse));
         }
 
-        [HttpGet("Habilitys/{id:guid}")]
+        [HttpGet("AditionalInfos/{id:guid}")]
         [AllowAnonymous]
         public async Task<ActionResult<AditionalInfoResponse>> Get(Guid id)
         {
@@ -42,14 +42,22 @@ namespace Portfolio_V2.Controllers
 
         private static AditionalInfoItem GetE(CreateAditionalInfoRequest req)
         {
-            return new()
+            var item = new AditionalInfoItem
             {
                 AditionalInfo = req.AditionalInfo.Trim(),
-                StartDate= req.StartDate,
-                EndDate= req.EndDate,
-                Level = req.Level,
-                Bullets = req.Bullets ?? [],
+                Bullets = new List<AditionalInfoBullet>(),
             };
+            foreach (var b in req.Bullets ?? Array.Empty<AditionalInfoBulletDto>())
+            {
+                item.Bullets.Add(new AditionalInfoBullet
+                {
+                    Text = b.Text.Trim(),
+                    Level = string.IsNullOrWhiteSpace(b.Level) ? null : b.Level.Trim(),
+                    StartDate = ParseDateOrNull(b.StartDate),
+                    EndDate = ParseDateOrNull(b.EndDate),
+                });
+            }
+            return item;
         }
 
         [HttpPut("management/AditionalInfos/{id:guid}")]
@@ -60,10 +68,17 @@ namespace Portfolio_V2.Controllers
             if (e is null) return NotFound();
 
             e.AditionalInfo = req.AditionalInfo.Trim();
-            e.StartDate = req.StartDate;
-            e.EndDate = req.EndDate;
-            e.Level = req.Level;
-            e.Bullets = req.Bullets ?? [];
+            e.Bullets.Clear();
+            foreach (var b in req.Bullets ?? Array.Empty<AditionalInfoBulletDto>())
+            {
+                e.Bullets.Add(new AditionalInfoBullet
+                {
+                    Text = b.Text.Trim(),
+                    Level = string.IsNullOrWhiteSpace(b.Level) ? null : b.Level.Trim(),
+                    StartDate = ParseDateOrNull(b.StartDate),
+                    EndDate = ParseDateOrNull(b.EndDate),
+                });
+            }
             e.UpdatedAt = DateTime.UtcNow;
 
             await _repo.UpdateAsync(e);
@@ -84,12 +99,20 @@ namespace Portfolio_V2.Controllers
         private static AditionalInfoResponse MapResponse(AditionalInfoItem e) => new(
             e.Id,
             e.AditionalInfo,
-            e.Bullets,
-            e.StartDate,
-            e.EndDate,
-            e.Level,
+            e.Bullets.Select(b => new AditionalInfoBulletDto(
+                b.Text,
+                b.Level,
+                b.StartDate?.ToString("yyyy-MM-dd"),
+                b.EndDate?.ToString("yyyy-MM-dd")
+            )).ToArray(),
             e.CreatedAt,
             e.UpdatedAt
         );
+
+        private static DateOnly? ParseDateOrNull(string? iso)
+        {
+            if (string.IsNullOrWhiteSpace(iso)) return null;
+            return DateOnly.TryParse(iso, out var d) ? d : null;
+        }
     }
 }

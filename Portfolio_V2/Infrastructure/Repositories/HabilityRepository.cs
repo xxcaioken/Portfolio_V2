@@ -10,13 +10,14 @@ namespace Portfolio_V2.Infrastructure.Repositories
         public async Task<List<HabilityItem>> ListAsync()
         {
             return await _db.Habilitys.AsNoTracking()
+                .Include(h => h.Bullets)
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
         }
 
         public async Task<HabilityItem?> GetAsync(Guid id)
         {
-            return await _db.Habilitys.FindAsync(id);
+            return await _db.Habilitys.Include(h => h.Bullets).FirstOrDefaultAsync(h => h.Id == id);
         }
 
         public async Task AddAsync(HabilityItem item)

@@ -3,13 +3,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Portfolio_V2.Contracts
 {
+    public record AditionalInfoBulletDto(
+        string Text,
+        string? Level,
+        string? StartDate,
+        string? EndDate
+    );
+
     public record AditionalInfoResponse(
         Guid Id,
         string AditionalInfo,
-        string[] Bullets,
-        DateTime? StartDate,
-        DateTime? EndDate,
-        string? Level,
+        AditionalInfoBulletDto[] Bullets,
         DateTime CreatedAt,
         DateTime? UpdatedAt
     );
@@ -17,10 +21,7 @@ namespace Portfolio_V2.Contracts
     public class CreateAditionalInfoRequest
     {
         [Required, MaxLength(150)] public required string AditionalInfo { get; set; }
-        [MinLength(0)] public string[] Bullets { get; set; } = [];
-        public DateTime? StartDate { get; set; } = null; 
-        public DateTime? EndDate { get; set; } = null;
-        public string? Level { get; set; } = null;
+        [MinLength(0)] public AditionalInfoBulletDto[] Bullets { get; set; } = [];
     }
 
     public class UpdateAditionalInfoRequest : CreateAditionalInfoRequest { }

@@ -8,7 +8,9 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<User> Users => Set<User>();
         public DbSet<ExperienceItem> Experiences => Set<ExperienceItem>();
         public DbSet<HabilityItem> Habilitys => Set<HabilityItem>();
+        public DbSet<HabilityBullet> HabilityBullets => Set<HabilityBullet>();
         public DbSet<AditionalInfoItem> AditionalInfos => Set<AditionalInfoItem>();
+        public DbSet<AditionalInfoBullet> AditionalInfoBullets => Set<AditionalInfoBullet>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -39,16 +41,28 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             });
 		
-		    modelBuilder.Entity<HabilityItem>(entity =>
+            modelBuilder.Entity<HabilityItem>(entity =>
             {
                 entity.ToTable("habilitys");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.Hability).IsRequired().HasMaxLength(150).HasColumnName("hability");
-                entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
-                entity.Property(e => e.Badge).IsRequired().HasMaxLength(120).HasColumnName("badge");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+                entity.HasMany(e => e.Bullets)
+                      .WithOne(b => b.HabilityItem!)
+                      .HasForeignKey(b => b.HabilityItemId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<HabilityBullet>(entity =>
+            {
+                entity.ToTable("hability_bullets");
+                entity.HasKey(b => b.Id);
+                entity.Property(b => b.Id).HasColumnName("id");
+                entity.Property(b => b.HabilityItemId).HasColumnName("hability_id");
+                entity.Property(b => b.Text).IsRequired().HasMaxLength(300).HasColumnName("text");
+                entity.Property(b => b.Badge).HasMaxLength(120).HasColumnName("badge");
             });
 
             modelBuilder.Entity<AditionalInfoItem>(entity =>
@@ -57,12 +71,24 @@ namespace Portfolio_V2.Infrastructure
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.AditionalInfo).IsRequired().HasMaxLength(150).HasColumnName("aditionalInfo");
-                entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
-                entity.Property(e => e.StartDate).HasColumnName("start_date").HasColumnType("date");
-                entity.Property(e => e.EndDate).HasColumnName("end_date").HasColumnType("date");
-                entity.Property(e => e.Level).IsRequired().HasMaxLength(120).HasColumnName("level");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+                entity.HasMany(e => e.Bullets)
+                      .WithOne(b => b.AditionalInfoItem!)
+                      .HasForeignKey(b => b.AditionalInfoItemId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AditionalInfoBullet>(entity =>
+            {
+                entity.ToTable("aditionalInfo_bullets");
+                entity.HasKey(b => b.Id);
+                entity.Property(b => b.Id).HasColumnName("id");
+                entity.Property(b => b.AditionalInfoItemId).HasColumnName("aditionalInfo_id");
+                entity.Property(b => b.Text).IsRequired().HasMaxLength(300).HasColumnName("text");
+                entity.Property(b => b.Level).HasMaxLength(120).HasColumnName("level");
+                entity.Property(b => b.StartDate).HasColumnName("start_date").HasColumnType("date");
+                entity.Property(b => b.EndDate).HasColumnName("end_date").HasColumnType("date");
             });
         }
 	}

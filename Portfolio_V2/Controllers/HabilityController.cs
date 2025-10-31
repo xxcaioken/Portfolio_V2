@@ -41,12 +41,20 @@ namespace Portfolio_V2.Controllers
 
         private static HabilityItem GetE(CreateHabilityRequest req)
         {
-            return new()
+            var item = new HabilityItem
             {
-                Hability= req.Hability.Trim(),
-                Badge= req.Badge.Trim(),
-                Bullets = req.Bullets ?? [],
+                Hability = req.Hability.Trim(),
+                Bullets = new List<HabilityBullet>(),
             };
+            foreach (var b in req.Bullets ?? Array.Empty<HabilityBulletDto>())
+            {
+                item.Bullets.Add(new HabilityBullet
+                {
+                    Text = b.Text.Trim(),
+                    Badge = string.IsNullOrWhiteSpace(b.Badge) ? null : b.Badge.Trim(),
+                });
+            }
+            return item;
         }
 
         [HttpPut("management/Habilitys/{id:guid}")]
@@ -57,8 +65,15 @@ namespace Portfolio_V2.Controllers
             if (e is null) return NotFound();
 
             e.Hability = req.Hability.Trim();
-            e.Bullets = req.Bullets ?? [];
-            e.Badge = req.Badge.Trim();
+            e.Bullets.Clear();
+            foreach (var b in req.Bullets ?? Array.Empty<HabilityBulletDto>())
+            {
+                e.Bullets.Add(new HabilityBullet
+                {
+                    Text = b.Text.Trim(),
+                    Badge = string.IsNullOrWhiteSpace(b.Badge) ? null : b.Badge.Trim(),
+                });
+            }
             e.UpdatedAt = DateTime.UtcNow;
             
             await _repo.UpdateAsync(e);
@@ -79,8 +94,7 @@ namespace Portfolio_V2.Controllers
         private static HabilityResponse MapResponse(HabilityItem e) => new(
             e.Id,
             e.Hability,
-            e.Bullets,
-            e.Badge,
+            e.Bullets.Select(b => new HabilityBulletDto(b.Text, b.Badge)).ToArray(),
             e.CreatedAt,
             e.UpdatedAt
         );
