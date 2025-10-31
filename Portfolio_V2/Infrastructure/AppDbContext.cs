@@ -11,6 +11,7 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<HabilityBullet> HabilityBullets => Set<HabilityBullet>();
         public DbSet<AditionalInfoItem> AditionalInfos => Set<AditionalInfoItem>();
         public DbSet<AditionalInfoBullet> AditionalInfoBullets => Set<AditionalInfoBullet>();
+        public DbSet<KeyTaskTechnology> KeyTaskTechnologies => Set<KeyTaskTechnology>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -89,6 +90,29 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(b => b.Level).HasMaxLength(120).HasColumnName("level");
                 entity.Property(b => b.StartDate).HasColumnName("start_date").HasColumnType("date");
                 entity.Property(b => b.EndDate).HasColumnName("end_date").HasColumnType("date");
+            });
+            
+            modelBuilder.Entity<KeyTaskBullet>(entity =>
+            {
+                entity.ToTable("KeyTask");
+                entity.HasKey(b => b.Id);
+                entity.Property(b => b.Id).HasColumnName("id");
+                entity.Property(b => b.KeyTask).HasColumnName("KeyTask");
+                entity.Property(b => b.description).IsRequired().HasMaxLength(400).HasColumnName("description");
+                entity.HasMany(b => b.Technologies)
+                      .WithOne(t => t.KeyTaskBullet!)
+                      .HasForeignKey(t => t.KeyTaskBulletId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<KeyTaskTechnology>(entity =>
+            {
+                entity.ToTable("keytask_technologies");
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.Id).HasColumnName("id");
+                entity.Property(t => t.KeyTaskBulletId).HasColumnName("keytask_id");
+                entity.Property(t => t.Technology).IsRequired().HasMaxLength(120).HasColumnName("technology");
+                entity.Property(t => t.TechnologyBadge).HasColumnName("technologyBadge");
             });
         }
 	}
