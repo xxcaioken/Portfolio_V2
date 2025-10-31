@@ -8,8 +8,9 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<User> Users => Set<User>();
         public DbSet<ExperienceItem> Experiences => Set<ExperienceItem>();
         public DbSet<HabilityItem> Habilitys => Set<HabilityItem>();
+        public DbSet<AditionalInfoItem> AditionalInfos => Set<AditionalInfoItem>();
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<User>(entity =>
 			{
@@ -49,6 +50,20 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             });
-		}
+
+            modelBuilder.Entity<AditionalInfoItem>(entity =>
+            {
+                entity.ToTable("aditionalInfos");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.AditionalInfo).IsRequired().HasMaxLength(150).HasColumnName("aditionalInfo");
+                entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
+                entity.Property(e => e.StartDate).HasColumnName("start_date").HasColumnType("date");
+                entity.Property(e => e.EndDate).HasColumnName("end_date").HasColumnType("date");
+                entity.Property(e => e.Level).IsRequired().HasMaxLength(120).HasColumnName("level");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            });
+        }
 	}
 }
