@@ -8,30 +8,35 @@ using Portfolio_V2.Contracts;
 using Portfolio_V2.Domain.Models;
 using Portfolio_V2.Infrastructure.Repositories;
 using System.Globalization;
+using Portfolio_V2.BLL;
 
 namespace Portfolio_V2.Controllers
 {
     [ApiController]
     [Route("")]
-    public class ExperienceController(IExperienceRepository repo) : ControllerBase
+    public class ExperienceController(IExperienceRepository repo, IExperienceBll bll, IExperienceTranslationRepository trRepo) : ControllerBase
     {
         private readonly IExperienceRepository _repo = repo;
+        private readonly IExperienceBll _bll = bll;
+        private readonly IExperienceTranslationRepository _trRepo = trRepo;
 
         [HttpGet("experiences")]
         [AllowAnonymous]
         public async Task<ActionResult<List<ExperienceResponse>>> List()
         {
-            List<ExperienceItem> list = await _repo.ListAsync();
-            return Ok(list.Select(MapResponse));
+            string lang = Language.FromHeaderOrQuery(Request);
+            var list = await _bll.ListAsync(lang);
+            return Ok(list);
         }
 
         [HttpGet("experiences/{id:guid}")]
         [AllowAnonymous]
         public async Task<ActionResult<ExperienceResponse>> Get(Guid id)
         {
-            ExperienceItem? e = await _repo.GetAsync(id);
-            if (e is null) return NotFound();
-            return Ok(MapResponse(e));
+            string lang = Language.FromHeaderOrQuery(Request);
+            var dto = await _bll.GetAsync(id, lang);
+            if (dto is null) return NotFound();
+            return Ok(dto);
         }
 
         [HttpPost("management/experiences")]
@@ -51,7 +56,7 @@ namespace Portfolio_V2.Controllers
             };
             await _repo.AddAsync(e);
             await _repo.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = e.Id }, MapResponse(e));
+            return CreatedAtAction(nameof(Get), new { id = e.Id }, await _bll.GetAsync(e.Id, Language.FromHeaderOrQuery(Request)));
         }
 
         [HttpPut("management/experiences/{id:guid}")]
@@ -60,7 +65,23 @@ namespace Portfolio_V2.Controllers
         {
             ExperienceItem? e = await _repo.GetAsync(id);
             if (e is null) return NotFound();
-            
+
+            string lang = Language.FromHeaderOrQuery(Request);
+            if (lang == Language.English)
+            {
+                // Upsert translation only
+                var tr = new Domain.Models.Translations.ExperienceItemTranslation
+                {
+                    ExperienceItemId = e.Id,
+                    Company = req.Company.Trim(),
+                    Role = req.Role.Trim(),
+                    Bullets = req.Bullets ?? [],
+                    UpdatedAt = DateTime.UtcNow
+                };
+                await _trRepo.UpsertAsync(tr);
+                return NoContent();
+            }
+
             if (!TryParseAndValidateDates(req.StartDate, req.EndDate, out var start, out var end, out var problem))
                 return ValidationProblem(problem);
 
@@ -70,7 +91,7 @@ namespace Portfolio_V2.Controllers
             e.EndDate = end;
             e.Bullets = req.Bullets ?? [];
             e.UpdatedAt = DateTime.UtcNow;
-            
+
             await _repo.UpdateAsync(e);
             await _repo.SaveChangesAsync();
             return NoContent();
@@ -86,16 +107,7 @@ namespace Portfolio_V2.Controllers
             await _repo.SaveChangesAsync();
             return NoContent();
         }
-        private static ExperienceResponse MapResponse(ExperienceItem e) => new(
-            e.Id,
-            e.Company,
-            e.Role,
-            e.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            e.EndDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            e.Bullets,
-            e.CreatedAt,
-            e.UpdatedAt
-        );
+        private static ExperienceResponse MapResponse(ExperienceItem e) => throw new NotImplementedException();
 
         private static bool TryParseAndValidateDates(string startStr, string? endStr, out DateOnly start, out DateOnly? end, out ValidationProblemDetails problem)
         {

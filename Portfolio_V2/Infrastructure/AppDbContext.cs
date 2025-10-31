@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Portfolio_V2.Domain.Models;
+using Portfolio_V2.Domain.Models.Translations;
 
 namespace Portfolio_V2.Infrastructure
 {
@@ -14,6 +15,15 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<KeyTaskTechnology> KeyTaskTechnologies => Set<KeyTaskTechnology>();
         public DbSet<AboutInfo> AboutInfos => Set<AboutInfo>();
         public DbSet<SocialLink> SocialLinks => Set<SocialLink>();
+        // Translations
+        public DbSet<ExperienceItemTranslation> ExperienceTranslations => Set<ExperienceItemTranslation>();
+        public DbSet<HabilityItemTranslation> HabilityTranslations => Set<HabilityItemTranslation>();
+        public DbSet<HabilityBulletTranslation> HabilityBulletTranslations => Set<HabilityBulletTranslation>();
+        public DbSet<AditionalInfoItemTranslation> AditionalInfoTranslations => Set<AditionalInfoItemTranslation>();
+        public DbSet<AditionalInfoBulletTranslation> AditionalInfoBulletTranslations => Set<AditionalInfoBulletTranslation>();
+        public DbSet<KeyTaskTranslation> KeyTaskTranslations => Set<KeyTaskTranslation>();
+        public DbSet<AboutInfoTranslation> AboutTranslations => Set<AboutInfoTranslation>();
+        public DbSet<SocialLinkTranslation> SocialLinkTranslationsT => Set<SocialLinkTranslation>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -149,6 +159,98 @@ namespace Portfolio_V2.Infrastructure
                 e.Property(s => s.Label).HasMaxLength(100).IsRequired().HasColumnName("label");
                 e.Property(s => s.Url).HasMaxLength(500).IsRequired().HasColumnName("url");
                 e.Property(s => s.IconKey).HasMaxLength(120).HasColumnName("icon_key");
+            });
+
+            // Translations mapping
+            modelBuilder.Entity<ExperienceItemTranslation>(e =>
+            {
+                e.ToTable("experiences_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.ExperienceItemId).HasColumnName("experience_id");
+                e.Property(x => x.Company).HasMaxLength(150).HasColumnName("company");
+                e.Property(x => x.Role).HasMaxLength(120).HasColumnName("role");
+                e.Property(x => x.Bullets).HasColumnName("bullets").HasColumnType("text[]");
+                e.Property(x => x.CreatedAt).HasColumnName("created_at");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            });
+
+            modelBuilder.Entity<HabilityItemTranslation>(e =>
+            {
+                e.ToTable("habilitys_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.HabilityItemId).HasColumnName("hability_id");
+                e.Property(x => x.Hability).HasMaxLength(150).HasColumnName("hability");
+                e.Property(x => x.CreatedAt).HasColumnName("created_at");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            });
+
+            modelBuilder.Entity<HabilityBulletTranslation>(e =>
+            {
+                e.ToTable("hability_bullets_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.HabilityBulletId).HasColumnName("hability_bullet_id");
+                e.Property(x => x.Text).HasMaxLength(300).HasColumnName("text");
+            });
+
+            modelBuilder.Entity<AditionalInfoItemTranslation>(e =>
+            {
+                e.ToTable("aditionalInfos_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.AditionalInfoItemId).HasColumnName("aditionalInfo_id");
+                e.Property(x => x.AditionalInfo).HasMaxLength(150).HasColumnName("aditionalInfo");
+                e.Property(x => x.CreatedAt).HasColumnName("created_at");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            });
+
+            modelBuilder.Entity<AditionalInfoBulletTranslation>(e =>
+            {
+                e.ToTable("aditionalInfo_bullets_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.AditionalInfoBulletId).HasColumnName("aditionalInfo_bullet_id");
+                e.Property(x => x.Text).HasMaxLength(300).HasColumnName("text");
+            });
+
+            modelBuilder.Entity<KeyTaskTranslation>(e =>
+            {
+                e.ToTable("keytask_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.KeyTaskBulletId).HasColumnName("keytask_id");
+                e.Property(x => x.KeyTask).HasColumnName("keytask");
+                e.Property(x => x.Description).HasMaxLength(400).HasColumnName("description");
+                e.Property(x => x.CreatedAt).HasColumnName("created_at");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            });
+
+            modelBuilder.Entity<AboutInfoTranslation>(e =>
+            {
+                e.ToTable("about_info_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.AboutInfoId).HasColumnName("about_id");
+                e.Property(x => x.Name).HasMaxLength(150).HasColumnName("name");
+                e.Property(x => x.Title).HasMaxLength(150).HasColumnName("title");
+                e.Property(x => x.Summary).HasMaxLength(2000).HasColumnName("summary");
+                e.Property(x => x.Location).HasMaxLength(150).HasColumnName("location");
+                e.Property(x => x.FooterNote).HasMaxLength(300).HasColumnName("footer_note");
+                e.Property(x => x.CreatedAt).HasColumnName("created_at");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            });
+
+            modelBuilder.Entity<SocialLinkTranslation>(e =>
+            {
+                e.ToTable("about_social_links_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.AboutInfoTranslationId).HasColumnName("about_tr_id");
+                e.Property(x => x.Label).HasMaxLength(100).HasColumnName("label");
+                e.Property(x => x.Url).HasMaxLength(500).HasColumnName("url");
+                e.Property(x => x.IconKey).HasMaxLength(120).HasColumnName("icon_key");
             });
         }
 	}

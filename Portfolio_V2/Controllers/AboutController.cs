@@ -4,25 +4,24 @@ using Portfolio_V2.Contracts;
 using Portfolio_V2.Domain.Models;
 using Portfolio_V2.Infrastructure.Repositories;
 using System.Security.Cryptography;
+using Portfolio_V2.BLL;
 
 namespace Portfolio_V2.Controllers
 {
     [ApiController]
     [Route("")]
-    public class AboutController(IAboutRepository repo) : ControllerBase
+    public class AboutController(IAboutRepository repo, IAboutBll aboutBll) : ControllerBase
     {
         private readonly IAboutRepository _repo = repo;
+        private readonly IAboutBll _aboutBll = aboutBll;
 
         [HttpGet("about")]
         [AllowAnonymous]
         public async Task<ActionResult<AboutResponse>> Get()
         {
-            var about = await _repo.GetAsync();
-            if (about is null)
-            {
-                return Ok(new AboutResponse("", "", "", "", "", "", "", null, "", null, Array.Empty<SocialLinkDto>()));
-            }
-            return Ok(Map(about));
+            string lang = Language.FromHeaderOrQuery(Request);
+            var dto = await _aboutBll.GetAsync(lang);
+            return Ok(dto);
         }
 
         [HttpPut("management/about")]
@@ -49,7 +48,9 @@ namespace Portfolio_V2.Controllers
             }
 
             await _repo.UpsertAsync(about);
-            return Ok(Map(about));
+            string lang = Language.FromHeaderOrQuery(Request);
+            var dto = await _aboutBll.GetAsync(lang);
+            return Ok(dto);
         }
 
         [HttpPost("management/about/avatar")]
@@ -98,19 +99,7 @@ namespace Portfolio_V2.Controllers
             return Ok(Map(about));
         }
 
-        private static AboutResponse Map(AboutInfo a) => new AboutResponse(
-            a.Name,
-            a.Title,
-            a.Summary,
-            a.Location,
-            a.Phone,
-            a.Email,
-            a.Linkedin,
-            a.Github,
-            a.AvatarUrl ?? string.Empty,
-            a.FooterNote,
-            a.Socials.Select(s => new SocialLinkDto(s.Label, s.Url, s.IconKey)).ToArray()
-        );
+        private static AboutResponse Map(AboutInfo a) => throw new NotImplementedException();
     }
 }
 

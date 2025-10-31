@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Portfolio_V2.Contracts
 {
     public record HabilityBulletDto(
+        Guid? Id,
         string Text,
         string? Badge
     );

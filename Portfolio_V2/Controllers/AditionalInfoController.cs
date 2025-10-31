@@ -4,30 +4,36 @@ using Portfolio_V2.Contracts;
 using Portfolio_V2.Domain.Models;
 using Portfolio_V2.Infrastructure.Repositories;
 using System.Reflection.Emit;
+using Portfolio_V2.BLL;
+using System.Linq;
 
 namespace Portfolio_V2.Controllers
 {
     [ApiController]
     [Route("")]
-    public class AditionalInfoController(IAditionalInfoRepository repo) : ControllerBase
+    public class AditionalInfoController(IAditionalInfoRepository repo, IAditionalInfoBll bll, IAditionalInfoTranslationRepository trRepo) : ControllerBase
     {
         private readonly IAditionalInfoRepository _repo = repo;
+        private readonly IAditionalInfoBll _bll = bll;
+        private readonly IAditionalInfoTranslationRepository _trRepo = trRepo;
 
         [HttpGet("AditionalInfos")]
         [AllowAnonymous]
         public async Task<ActionResult<List<AditionalInfoResponse>>> List()
         {
-            List<AditionalInfoItem> list = await _repo.ListAsync();
-            return Ok(list.Select(MapResponse));
+            string lang = Language.FromHeaderOrQuery(Request);
+            var list = await _bll.ListAsync(lang);
+            return Ok(list);
         }
 
         [HttpGet("AditionalInfos/{id:guid}")]
         [AllowAnonymous]
         public async Task<ActionResult<AditionalInfoResponse>> Get(Guid id)
         {
-            AditionalInfoItem? e = await _repo.GetAsync(id);
-            if (e is null) return NotFound();
-            return Ok(MapResponse(e));
+            string lang = Language.FromHeaderOrQuery(Request);
+            var dto = await _bll.GetAsync(id, lang);
+            if (dto is null) return NotFound();
+            return Ok(dto);
         }
 
         [HttpPost("management/AditionalInfos")]
@@ -37,7 +43,7 @@ namespace Portfolio_V2.Controllers
             AditionalInfoItem e = GetE(req);
             await _repo.AddAsync(e);
             await _repo.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = e.Id }, MapResponse(e));
+            return CreatedAtAction(nameof(Get), new { id = e.Id }, await _bll.GetAsync(e.Id, Language.FromHeaderOrQuery(Request)));
         }
 
         private static AditionalInfoItem GetE(CreateAditionalInfoRequest req)
@@ -66,18 +72,63 @@ namespace Portfolio_V2.Controllers
         {
             AditionalInfoItem? e = await _repo.GetAsync(id);
             if (e is null) return NotFound();
+            string lang = Language.FromHeaderOrQuery(Request);
+            if (lang == Language.English)
+            {
+                var tr = new Domain.Models.Translations.AditionalInfoItemTranslation
+                {
+                    AditionalInfoItemId = e.Id,
+                    AditionalInfo = req.AditionalInfo.Trim(),
+                    UpdatedAt = DateTime.UtcNow
+                };
+                await _trRepo.UpsertAsync(tr);
+                // Translate bullets by bullet id when provided
+                var baseMap = e.Bullets.ToDictionary(b => b.Id);
+                foreach (var reqB in req.Bullets ?? Array.Empty<AditionalInfoBulletDto>())
+                {
+                    if (reqB.Id is Guid bid && baseMap.ContainsKey(bid))
+                    {
+                        var btr = new Domain.Models.Translations.AditionalInfoBulletTranslation
+                        {
+                            AditionalInfoBulletId = bid,
+                            Text = reqB.Text.Trim(),
+                        };
+                        await _trRepo.UpsertBulletAsync(btr);
+                    }
+                }
+                return NoContent();
+            }
 
             e.AditionalInfo = req.AditionalInfo.Trim();
-            e.Bullets.Clear();
-            foreach (var b in req.Bullets ?? Array.Empty<AditionalInfoBulletDto>())
+            // Upsert bullets preserving IDs
+            var existing = e.Bullets.ToDictionary(b => b.Id);
+            var incoming = req.Bullets ?? Array.Empty<AditionalInfoBulletDto>();
+            var toKeep = new HashSet<Guid>();
+            foreach (var b in incoming)
             {
-                e.Bullets.Add(new AditionalInfoBullet
+                if (b.Id is Guid bid && existing.TryGetValue(bid, out var eb))
                 {
-                    Text = b.Text.Trim(),
-                    Level = string.IsNullOrWhiteSpace(b.Level) ? null : b.Level.Trim(),
-                    StartDate = ParseDateOrNull(b.StartDate),
-                    EndDate = ParseDateOrNull(b.EndDate),
-                });
+                    eb.Text = b.Text.Trim();
+                    eb.Level = string.IsNullOrWhiteSpace(b.Level) ? null : b.Level.Trim();
+                    eb.StartDate = ParseDateOrNull(b.StartDate);
+                    eb.EndDate = ParseDateOrNull(b.EndDate);
+                    toKeep.Add(bid);
+                }
+                else
+                {
+                    e.Bullets.Add(new AditionalInfoBullet
+                    {
+                        Text = b.Text.Trim(),
+                        Level = string.IsNullOrWhiteSpace(b.Level) ? null : b.Level.Trim(),
+                        StartDate = ParseDateOrNull(b.StartDate),
+                        EndDate = ParseDateOrNull(b.EndDate),
+                    });
+                }
+            }
+            var toRemove = e.Bullets.Where(x => !toKeep.Contains(x.Id)).ToList();
+            foreach (var rm in toRemove)
+            {
+                e.Bullets.Remove(rm);
             }
             e.UpdatedAt = DateTime.UtcNow;
 
@@ -96,18 +147,7 @@ namespace Portfolio_V2.Controllers
             await _repo.SaveChangesAsync();
             return NoContent();
         }
-        private static AditionalInfoResponse MapResponse(AditionalInfoItem e) => new(
-            e.Id,
-            e.AditionalInfo,
-            e.Bullets.Select(b => new AditionalInfoBulletDto(
-                b.Text,
-                b.Level,
-                b.StartDate?.ToString("yyyy-MM-dd"),
-                b.EndDate?.ToString("yyyy-MM-dd")
-            )).ToArray(),
-            e.CreatedAt,
-            e.UpdatedAt
-        );
+        private static AditionalInfoResponse MapResponse(AditionalInfoItem e) => throw new NotImplementedException();
 
         private static DateOnly? ParseDateOrNull(string? iso)
         {
