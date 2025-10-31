@@ -41,13 +41,13 @@ namespace Portfolio_V2.Controllers
             if (!TryParseAndValidateDates(req.StartDate, req.EndDate, out var start, out var end, out var problem))
                 return ValidationProblem(problem);
 
-            ExperienceItem e = new ExperienceItem
+            ExperienceItem e = new()
             {
                 Company = req.Company.Trim(),
                 Role = req.Role.Trim(),
                 StartDate = start,
                 EndDate = end,
-                Bullets = req.Bullets ?? Array.Empty<string>(),
+                Bullets = req.Bullets ?? [],
             };
             await _repo.AddAsync(e);
             await _repo.SaveChangesAsync();
@@ -60,6 +60,7 @@ namespace Portfolio_V2.Controllers
         {
             ExperienceItem? e = await _repo.GetAsync(id);
             if (e is null) return NotFound();
+            
             if (!TryParseAndValidateDates(req.StartDate, req.EndDate, out var start, out var end, out var problem))
                 return ValidationProblem(problem);
 
@@ -67,8 +68,9 @@ namespace Portfolio_V2.Controllers
             e.Role = req.Role.Trim();
             e.StartDate = start;
             e.EndDate = end;
-            e.Bullets = req.Bullets ?? Array.Empty<string>();
+            e.Bullets = req.Bullets ?? [];
             e.UpdatedAt = DateTime.UtcNow;
+            
             await _repo.UpdateAsync(e);
             await _repo.SaveChangesAsync();
             return NoContent();
@@ -84,7 +86,7 @@ namespace Portfolio_V2.Controllers
             await _repo.SaveChangesAsync();
             return NoContent();
         }
-        private static ExperienceResponse MapResponse(ExperienceItem e) => new ExperienceResponse(
+        private static ExperienceResponse MapResponse(ExperienceItem e) => new(
             e.Id,
             e.Company,
             e.Role,

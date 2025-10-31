@@ -7,6 +7,7 @@ namespace Portfolio_V2.Infrastructure
 	{
         public DbSet<User> Users => Set<User>();
         public DbSet<ExperienceItem> Experiences => Set<ExperienceItem>();
+        public DbSet<HabilityItem> Habilitys => Set<HabilityItem>();
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -33,6 +34,18 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(e => e.StartDate).HasColumnName("start_date").HasColumnType("date");
                 entity.Property(e => e.EndDate).HasColumnName("end_date").HasColumnType("date");
                 entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            });
+		
+		    modelBuilder.Entity<HabilityItem>(entity =>
+            {
+                entity.ToTable("habilitys");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Hability).IsRequired().HasMaxLength(150).HasColumnName("hability");
+                entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
+                entity.Property(e => e.Badge).IsRequired().HasMaxLength(120).HasColumnName("badge");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             });
