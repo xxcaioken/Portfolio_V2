@@ -18,7 +18,7 @@ namespace Portfolio_V2.BLL
         public async Task<List<ExperienceResponse>> ListAsync(string lang)
         {
             var list = await _repo.ListAsync();
-            if (lang != Language.Portuguese) return [.. list.Select(e => Map(e))];
+            if (lang != Language.English) return [.. list.Select(e => Map(e))];
             var results = new List<ExperienceResponse>(list.Count);
             foreach (var e in list)
             {
