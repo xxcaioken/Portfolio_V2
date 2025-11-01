@@ -9,7 +9,7 @@ namespace Portfolio_V2.Infrastructure.Repositories
 
         public async Task<List<HabilityItem>> ListAsync()
         {
-            return await _db.Habilitys.AsNoTracking()
+            return await _db.Habilities.AsNoTracking()
                 .Include(h => h.Bullets)
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
@@ -17,23 +17,23 @@ namespace Portfolio_V2.Infrastructure.Repositories
 
         public async Task<HabilityItem?> GetAsync(Guid id)
         {
-            return await _db.Habilitys.Include(h => h.Bullets).FirstOrDefaultAsync(h => h.Id == id);
+            return await _db.Habilities.Include(h => h.Bullets).FirstOrDefaultAsync(h => h.Id == id);
         }
 
         public async Task AddAsync(HabilityItem item)
         {
-            await _db.Habilitys.AddAsync(item);
+            await _db.Habilities.AddAsync(item);
         }
 
         public Task UpdateAsync(HabilityItem item)
         {
-            _db.Habilitys.Update(item);
+            _db.Habilities.Update(item);
             return Task.CompletedTask;
         }
 
         public Task DeleteAsync(HabilityItem item)
         {
-            _db.Habilitys.Remove(item);
+            _db.Habilities.Remove(item);
             return Task.CompletedTask;
         }
 

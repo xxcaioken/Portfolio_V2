@@ -16,7 +16,7 @@ namespace Portfolio_V2.Controllers
         private readonly IHabilityBll _bll = bll;
         private readonly IHabilityTranslationRepository _trRepo = trRepo;
 
-        [HttpGet("Habilitys")]
+        [HttpGet("Habilities")]
         [AllowAnonymous]
         public async Task<ActionResult<List<HabilityResponse>>> List()
         {
@@ -25,7 +25,7 @@ namespace Portfolio_V2.Controllers
             return Ok(list);
         }
 
-        [HttpGet("Habilitys/{id:guid}")]
+        [HttpGet("Habilities/{id:guid}")]
         [AllowAnonymous]
         public async Task<ActionResult<HabilityResponse>> Get(Guid id)
         {
@@ -35,7 +35,7 @@ namespace Portfolio_V2.Controllers
             return Ok(dto);
         }
 
-        [HttpPost("management/Habilitys")]
+        [HttpPost("management/Habilities")]
         [Authorize(Policy = "Admin")]
         public async Task<ActionResult<HabilityResponse>> Create([FromBody] CreateHabilityRequest req)
         {   
@@ -63,7 +63,7 @@ namespace Portfolio_V2.Controllers
             return item;
         }
 
-        [HttpPut("management/Habilitys/{id:guid}")]
+        [HttpPut("management/Habilities/{id:guid}")]
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateHabilityRequest req)
         {
@@ -130,7 +130,7 @@ namespace Portfolio_V2.Controllers
             return NoContent();
         }
 
-        [HttpDelete("management/Habilitys/{id:guid}")]
+        [HttpDelete("management/Habilities/{id:guid}")]
         [Authorize(Policy = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {

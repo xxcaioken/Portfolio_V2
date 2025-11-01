@@ -8,7 +8,7 @@ namespace Portfolio_V2.Infrastructure
 	{
         public DbSet<User> Users => Set<User>();
         public DbSet<ExperienceItem> Experiences => Set<ExperienceItem>();
-        public DbSet<HabilityItem> Habilitys => Set<HabilityItem>();
+        public DbSet<HabilityItem> Habilities => Set<HabilityItem>();
         public DbSet<HabilityBullet> HabilityBullets => Set<HabilityBullet>();
         public DbSet<AditionalInfoItem> AditionalInfos => Set<AditionalInfoItem>();
         public DbSet<AditionalInfoBullet> AditionalInfoBullets => Set<AditionalInfoBullet>();
@@ -56,7 +56,7 @@ namespace Portfolio_V2.Infrastructure
 		
             modelBuilder.Entity<HabilityItem>(entity =>
             {
-                entity.ToTable("habilitys");
+                entity.ToTable("Habilities");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.Hability).IsRequired().HasMaxLength(150).HasColumnName("hability");
@@ -177,7 +177,7 @@ namespace Portfolio_V2.Infrastructure
 
             modelBuilder.Entity<HabilityItemTranslation>(e =>
             {
-                e.ToTable("habilitys_en");
+                e.ToTable("Habilities_en");
                 e.HasKey(x => x.Id);
                 e.Property(x => x.Id).HasColumnName("id");
                 e.Property(x => x.HabilityItemId).HasColumnName("hability_id");
