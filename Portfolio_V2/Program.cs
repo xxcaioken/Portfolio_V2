@@ -67,6 +67,7 @@ builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IAboutReposi
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IExperienceRepository, Portfolio_V2.Infrastructure.Repositories.ExperienceRepository>();
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IHabilityRepository, Portfolio_V2.Infrastructure.Repositories.HabilityRepository>();
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IAditionalInfoRepository, Portfolio_V2.Infrastructure.Repositories.AditionalInfoRepository>();
+builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IRecommendationLetterRepository, Portfolio_V2.Infrastructure.Repositories.RecommendationLetterRepository>();
 // Translation repositories
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IExperienceTranslationRepository, Portfolio_V2.Infrastructure.Repositories.ExperienceTranslationRepository>();
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IHabilityTranslationRepository, Portfolio_V2.Infrastructure.Repositories.HabilityTranslationRepository>();
@@ -80,6 +81,7 @@ builder.Services.AddScoped<Portfolio_V2.BLL.IExperienceBll, Portfolio_V2.BLL.Exp
 builder.Services.AddScoped<Portfolio_V2.BLL.IHabilityBll, Portfolio_V2.BLL.HabilityBll>();
 builder.Services.AddScoped<Portfolio_V2.BLL.IAditionalInfoBll, Portfolio_V2.BLL.AditionalInfoBll>();
 builder.Services.AddScoped<Portfolio_V2.BLL.IKeyTaskBll, Portfolio_V2.BLL.KeyTaskBll>();
+builder.Services.AddScoped<Portfolio_V2.BLL.IRecommendationLetterBll, Portfolio_V2.BLL.RecommendationLetterBll>();
 
 builder.Services.AddOpenApi();
 

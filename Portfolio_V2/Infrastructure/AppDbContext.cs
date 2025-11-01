@@ -15,6 +15,7 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<KeyTaskTechnology> KeyTaskTechnologies => Set<KeyTaskTechnology>();
         public DbSet<AboutInfo> AboutInfos => Set<AboutInfo>();
         public DbSet<SocialLink> SocialLinks => Set<SocialLink>();
+        public DbSet<RecommendationLetter> RecommendationLetters => Set<RecommendationLetter>();
         // Translations
         public DbSet<ExperienceItemTranslation> ExperienceTranslations => Set<ExperienceItemTranslation>();
         public DbSet<HabilityItemTranslation> HabilityTranslations => Set<HabilityItemTranslation>();
@@ -159,6 +160,17 @@ namespace Portfolio_V2.Infrastructure
                 e.Property(s => s.Label).HasMaxLength(100).IsRequired().HasColumnName("label");
                 e.Property(s => s.Url).HasMaxLength(500).IsRequired().HasColumnName("url");
                 e.Property(s => s.IconKey).HasMaxLength(120).HasColumnName("icon_key");
+            });
+
+            modelBuilder.Entity<RecommendationLetter>(e =>
+            {
+                e.ToTable("recommendation_letters");
+                e.HasKey(r => r.Id);
+                e.Property(r => r.Id).HasColumnName("id");
+                e.Property(r => r.ImageUrlPt).HasMaxLength(500).HasColumnName("image_url_pt");
+                e.Property(r => r.ImageUrlEn).HasMaxLength(500).HasColumnName("image_url_en");
+                e.Property(r => r.CreatedAt).HasColumnName("created_at");
+                e.Property(r => r.UpdatedAt).HasColumnName("updated_at");
             });
 
             // Translations mapping
