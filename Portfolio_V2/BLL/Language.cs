@@ -14,7 +14,7 @@ namespace Portfolio_V2.BLL
                 return Portuguese;
             }
             var accept = req.Headers.AcceptLanguage.ToString();
-            if (!string.IsNullOrWhiteSpace(accept) && accept.ToLowerInvariant().Contains(English)) return English;
+            if (!string.IsNullOrWhiteSpace(accept) && accept.ToLowerInvariant().Contains(English) && !accept.ToLowerInvariant().Contains(Portuguese)) return English;
             return Portuguese;
         }
     }
