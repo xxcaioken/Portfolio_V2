@@ -91,6 +91,19 @@ namespace Portfolio_V2.Infrastructure.Repositories
             await _db.SaveChangesAsync();
         }
     }
+
+    public class TestimonialTranslationRepository(AppDbContext db) : ITestimonialTranslationRepository
+    {
+        private readonly AppDbContext _db = db;
+        public Task<TestimonialTranslation?> GetByTestimonialIdAsync(Guid testimonialId) =>
+            _db.TestimonialTranslations.AsNoTracking().FirstOrDefaultAsync(x => x.TestimonialId == testimonialId);
+        public async Task UpsertAsync(TestimonialTranslation tr)
+        {
+            var existing = await _db.TestimonialTranslations.FirstOrDefaultAsync(x => x.TestimonialId == tr.TestimonialId);
+            if (existing is null) _db.TestimonialTranslations.Add(tr); else { existing.Name = tr.Name; existing.Highlight = tr.Highlight; existing.UpdatedAt = DateTime.UtcNow; }
+            await _db.SaveChangesAsync();
+        }
+    }
 }
 
 

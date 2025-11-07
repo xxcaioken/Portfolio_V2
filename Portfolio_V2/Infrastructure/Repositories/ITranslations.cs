@@ -37,6 +37,12 @@ namespace Portfolio_V2.Infrastructure.Repositories
         Task<SocialLinkTranslation[]> GetSocialTranslationsAsync(Guid aboutTrId);
         Task UpsertSocialAsync(SocialLinkTranslation tr);
     }
+
+    public interface ITestimonialTranslationRepository
+    {
+        Task<TestimonialTranslation?> GetByTestimonialIdAsync(Guid testimonialId);
+        Task UpsertAsync(TestimonialTranslation tr);
+    }
 }
 
 

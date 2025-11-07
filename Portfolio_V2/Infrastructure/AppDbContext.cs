@@ -16,6 +16,7 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<AboutInfo> AboutInfos => Set<AboutInfo>();
         public DbSet<SocialLink> SocialLinks => Set<SocialLink>();
         public DbSet<RecommendationLetter> RecommendationLetters => Set<RecommendationLetter>();
+        public DbSet<Testimonial> Testimonials => Set<Testimonial>();
         // Translations
         public DbSet<ExperienceItemTranslation> ExperienceTranslations => Set<ExperienceItemTranslation>();
         public DbSet<HabilityItemTranslation> HabilityTranslations => Set<HabilityItemTranslation>();
@@ -25,6 +26,7 @@ namespace Portfolio_V2.Infrastructure
         public DbSet<KeyTaskTranslation> KeyTaskTranslations => Set<KeyTaskTranslation>();
         public DbSet<AboutInfoTranslation> AboutTranslations => Set<AboutInfoTranslation>();
         public DbSet<SocialLinkTranslation> SocialLinkTranslationsT => Set<SocialLinkTranslation>();
+        public DbSet<TestimonialTranslation> TestimonialTranslations => Set<TestimonialTranslation>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -173,6 +175,17 @@ namespace Portfolio_V2.Infrastructure
                 e.Property(r => r.UpdatedAt).HasColumnName("updated_at");
             });
 
+            modelBuilder.Entity<Testimonial>(e =>
+            {
+                e.ToTable("testimonials");
+                e.HasKey(t => t.Id);
+                e.Property(t => t.Id).HasColumnName("id");
+                e.Property(t => t.Name).IsRequired().HasMaxLength(150).HasColumnName("name");
+                e.Property(t => t.Highlight).IsRequired().HasMaxLength(1200).HasColumnName("highlight");
+                e.Property(t => t.CreatedAt).HasColumnName("created_at");
+                e.Property(t => t.UpdatedAt).HasColumnName("updated_at");
+            });
+
             // Translations mapping
             modelBuilder.Entity<ExperienceItemTranslation>(e =>
             {
@@ -263,6 +276,18 @@ namespace Portfolio_V2.Infrastructure
                 e.Property(x => x.Label).HasMaxLength(100).HasColumnName("label");
                 e.Property(x => x.Url).HasMaxLength(500).HasColumnName("url");
                 e.Property(x => x.IconKey).HasMaxLength(120).HasColumnName("icon_key");
+            });
+
+            modelBuilder.Entity<TestimonialTranslation>(e =>
+            {
+                e.ToTable("testimonials_en");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.TestimonialId).HasColumnName("testimonial_id");
+                e.Property(x => x.Name).HasMaxLength(150).HasColumnName("name");
+                e.Property(x => x.Highlight).HasMaxLength(1200).HasColumnName("highlight");
+                e.Property(x => x.CreatedAt).HasColumnName("created_at");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
             });
         }
 	}
