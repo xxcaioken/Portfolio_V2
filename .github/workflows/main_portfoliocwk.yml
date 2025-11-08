@@ -27,14 +27,14 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
-      - name: dotnet publish (self-contained win-x64)
-        run: dotnet publish -c Release -r win-x64 --self-contained true -o "${{ github.workspace }}/published"
+      - name: dotnet publish
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ github.workspace }}/published
+          path: ${{ github.workspace }}/myapp
 
   deploy:
     environment: production
@@ -44,6 +44,7 @@ jobs:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
     env:
+      RESOURCE_GROUP: ${{ vars.RESOURCE_GROUP }}
       AUTH_JWT_ISSUER: ${{ secrets.AUTH_JWT_ISSUER }}
       AUTH_JWT_AUDIENCE: ${{ secrets.AUTH_JWT_AUDIENCE }}
       AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET }}
@@ -63,27 +64,6 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_357A769CB965447599A53D616D2A4517 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_57DBB1770A684B16A7386080A59F9BBB }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D838AA56EA7B47F0A5D9787AD979EFE0 }}
-
-      - name: Apply App Settings (JWT, CORS) via Azure CLI
-        shell: pwsh
-        run: |
-          az webapp config appsettings set `
-            --resource-group "$env:RESOURCE_GROUP" `
-            --name "portfoliocwk" `
-            --settings `
-              Authentication__Jwt__Issuer="$env:AUTH_JWT_ISSUER" `
-              Authentication__Jwt__Audience="$env:AUTH_JWT_AUDIENCE" `
-              Authentication__Jwt__Secret="$env:AUTH_JWT_SECRET" `
-              ALLOWED_ORIGINS="$env:ALLOWED_ORIGINS"
-
-      - name: Apply Connection String via Azure CLI
-        shell: pwsh
-        run: |
-          az webapp config connection-string set `
-            --resource-group "$env:RESOURCE_GROUP" `
-            --name "portfoliocwk" `
-            --settings AZURE_SQL_CONNECTIONSTRING="$env:AZURE_SQL_CONNECTIONSTRING" `
-            --connection-string-type SQLAzure
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
