@@ -34,7 +34,6 @@ namespace Portfolio_V2.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-            bool isNpgsql = (Database.ProviderName?.IndexOf("Npgsql", StringComparison.OrdinalIgnoreCase) ?? -1) >= 0;
             var jsonOptions = new JsonSerializerOptions();
             var stringArrayConverter = new ValueConverter<string[], string>(
                 v => JsonSerializer.Serialize<string[]>(v, jsonOptions),
@@ -68,17 +67,11 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(e => e.StartDate).HasColumnName("start_date").HasColumnType("date");
                 entity.Property(e => e.EndDate).HasColumnName("end_date").HasColumnType("date");
                 var prop = entity.Property(e => e.Bullets)
-                                   .HasColumnName("bullets");
-                if (isNpgsql)
-                {
-                    prop.HasColumnType("text[]");
-                }
-                else
-                {
-                    prop.HasColumnType("nvarchar(max)")
-                        .HasConversion(stringArrayConverter)
-                        .Metadata.SetValueComparer(stringArrayComparer);
-                }
+                                 .HasColumnName("bullets");
+             
+                prop.HasColumnType("nvarchar(max)")
+                    .HasConversion(stringArrayConverter)
+                    .Metadata.SetValueComparer(stringArrayComparer);
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             });
@@ -221,18 +214,11 @@ namespace Portfolio_V2.Infrastructure
                 e.Property(x => x.ExperienceItemId).HasColumnName("experience_id");
                 e.Property(x => x.Company).HasMaxLength(150).HasColumnName("company");
                 e.Property(x => x.Role).HasMaxLength(120).HasColumnName("role");
-                var trProp = e.Property(x => x.Bullets)
-                               .HasColumnName("bullets");
-                if (isNpgsql)
-                {
-                    trProp.HasColumnType("text[]");
-                }
-                else
-                {
+                var trProp = e.Property(x => x.Bullets);
+
                     trProp.HasColumnType("nvarchar(max)")
                           .HasConversion(stringArrayConverter)
                           .Metadata.SetValueComparer(stringArrayComparer);
-                }
                 e.Property(x => x.CreatedAt).HasColumnName("created_at");
                 e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
             });

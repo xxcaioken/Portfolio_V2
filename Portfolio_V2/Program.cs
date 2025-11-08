@@ -61,7 +61,17 @@ if (string.IsNullOrWhiteSpace(azureSql))
     throw new InvalidOperationException("ConnectionStrings:AZURE_SQL_CONNECTIONSTRING não configurada. Defina a connection string do Azure SQL.");
 }
 builder.Services.AddDbContext<Portfolio_V2.Infrastructure.AppDbContext>(options =>
-    options.UseSqlServer(azureSql)
+    options.UseSqlServer(
+        azureSql,
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null
+            );
+        }
+    )
 );
 
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IUserRepository, Portfolio_V2.Infrastructure.Repositories.UserRepository>();
@@ -116,11 +126,20 @@ app.MapControllers();
 using (IServiceScope scope = app.Services.CreateScope())
 {
     Portfolio_V2.Infrastructure.AppDbContext db = scope.ServiceProvider.GetRequiredService<Portfolio_V2.Infrastructure.AppDbContext>();
-    if (app.Environment.IsDevelopment())
-        db.Database.EnsureCreated();
-    else
-        db.Database.Migrate();
-    await Portfolio_V2.Infrastructure.Seed.DatabaseSeeder.SeedAsync(db);
+
+    var strategy = db.Database.CreateExecutionStrategy();
+    await strategy.ExecuteAsync(async () =>
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            db.Database.EnsureCreated();
+        }
+        else
+        {
+            db.Database.Migrate();
+        }
+        await Portfolio_V2.Infrastructure.Seed.DatabaseSeeder.SeedAsync(db);
+    });
 
 }
 
