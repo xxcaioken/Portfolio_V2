@@ -55,8 +55,13 @@ builder.Services.AddCors(opt =>
         .AllowCredentials());
 });
 
+string? azureSql = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
+if (string.IsNullOrWhiteSpace(azureSql))
+{
+    throw new InvalidOperationException("ConnectionStrings:AZURE_SQL_CONNECTIONSTRING não configurada. Defina a connection string do Azure SQL.");
+}
 builder.Services.AddDbContext<Portfolio_V2.Infrastructure.AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseSqlServer(azureSql)
 );
 
 builder.Services.AddScoped<Portfolio_V2.Infrastructure.Repositories.IUserRepository, Portfolio_V2.Infrastructure.Repositories.UserRepository>();

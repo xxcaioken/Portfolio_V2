@@ -39,3 +39,4 @@ wwwroot/
 
 # Dotnet tools
 .dotnet-tools/
+**/appsettings.Development.json

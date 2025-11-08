@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Portfolio_V2.Domain.Models;
 using Portfolio_V2.Domain.Models.Translations;
+using System.Text.Json;
+using System.Linq;
 
 namespace Portfolio_V2.Infrastructure
 {
@@ -30,6 +34,17 @@ namespace Portfolio_V2.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+            bool isNpgsql = (Database.ProviderName?.IndexOf("Npgsql", StringComparison.OrdinalIgnoreCase) ?? -1) >= 0;
+            var jsonOptions = new JsonSerializerOptions();
+            var stringArrayConverter = new ValueConverter<string[], string>(
+                v => JsonSerializer.Serialize<string[]>(v, jsonOptions),
+                v => string.IsNullOrWhiteSpace(v) ? Array.Empty<string>() : (JsonSerializer.Deserialize<string[]>(v, jsonOptions) ?? Array.Empty<string>())
+            );
+            var stringArrayComparer = new ValueComparer<string[]>(
+                (a, b) => a != null && b != null && a.SequenceEqual(b),
+                v => v != null ? v.Aggregate(0, (h, s) => HashCode.Combine(h, s.GetHashCode())) : 0,
+                v => v == null ? Array.Empty<string>() : v.ToArray()
+            );
 			modelBuilder.Entity<User>(entity =>
 			{
 				entity.ToTable("users");
@@ -52,7 +67,18 @@ namespace Portfolio_V2.Infrastructure
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(120).HasColumnName("role");
                 entity.Property(e => e.StartDate).HasColumnName("start_date").HasColumnType("date");
                 entity.Property(e => e.EndDate).HasColumnName("end_date").HasColumnType("date");
-                entity.Property(e => e.Bullets).HasColumnName("bullets").HasColumnType("text[]");
+                var prop = entity.Property(e => e.Bullets)
+                                   .HasColumnName("bullets");
+                if (isNpgsql)
+                {
+                    prop.HasColumnType("text[]");
+                }
+                else
+                {
+                    prop.HasColumnType("nvarchar(max)")
+                        .HasConversion(stringArrayConverter)
+                        .Metadata.SetValueComparer(stringArrayComparer);
+                }
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             });
@@ -195,7 +221,18 @@ namespace Portfolio_V2.Infrastructure
                 e.Property(x => x.ExperienceItemId).HasColumnName("experience_id");
                 e.Property(x => x.Company).HasMaxLength(150).HasColumnName("company");
                 e.Property(x => x.Role).HasMaxLength(120).HasColumnName("role");
-                e.Property(x => x.Bullets).HasColumnName("bullets").HasColumnType("text[]");
+                var trProp = e.Property(x => x.Bullets)
+                               .HasColumnName("bullets");
+                if (isNpgsql)
+                {
+                    trProp.HasColumnType("text[]");
+                }
+                else
+                {
+                    trProp.HasColumnType("nvarchar(max)")
+                          .HasConversion(stringArrayConverter)
+                          .Metadata.SetValueComparer(stringArrayComparer);
+                }
                 e.Property(x => x.CreatedAt).HasColumnName("created_at");
                 e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
             });
