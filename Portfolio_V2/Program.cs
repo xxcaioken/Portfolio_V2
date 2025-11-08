@@ -5,10 +5,24 @@ using System.Text;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+string GetConfig(string primaryKey, params string[] envFallbackKeys)
+{
+    string? v = builder.Configuration[primaryKey];
+    if (!string.IsNullOrWhiteSpace(v))
+        return v!;
+    foreach (string key in envFallbackKeys)
+    {
+        string? ev = Environment.GetEnvironmentVariable(key);
+        if (!string.IsNullOrWhiteSpace(ev))
+            return ev!;
+    }
+    return string.Empty;
+}
+
 IConfigurationSection jwtSection = builder.Configuration.GetSection("Authentication:Jwt");
-string issuer = jwtSection.GetValue<string>("Issuer") ?? string.Empty;
-string audience = jwtSection.GetValue<string>("Audience") ?? string.Empty;
-string secret = jwtSection.GetValue<string>("Secret") ?? string.Empty;
+string issuer = GetConfig("Authentication:Jwt:Issuer", "Authentication__Jwt__Issuer", "AuthenticationJwt_Issuer");
+string audience = GetConfig("Authentication:Jwt:Audience", "Authentication__Jwt__Audience", "AuthenticationJwt_Audience");
+string secret = GetConfig("Authentication:Jwt:Secret", "Authentication__Jwt__Secret", "AuthenticationJwt_Secret");
 
 if (secret.Length < 32)
 {
@@ -46,6 +60,8 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
+// CORS (Dev + opcional Prod via env "ALLOWED_ORIGINS" ou config "Cors:AllowedOrigins")
+string? allowedOriginsCsv = builder.Configuration["Cors:AllowedOrigins"] ?? Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("DevCors", p => p
@@ -53,23 +69,39 @@ builder.Services.AddCors(opt =>
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials());
+    if (!string.IsNullOrWhiteSpace(allowedOriginsCsv))
+    {
+        string[] origins = allowedOriginsCsv
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (origins.Length > 0)
+        {
+            opt.AddPolicy("ProdCors", p => p
+                .WithOrigins(origins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+        }
+    }
 });
 
 string? azureSql = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING");
 if (string.IsNullOrWhiteSpace(azureSql))
 {
-    throw new InvalidOperationException("ConnectionStrings:AZURE_SQL_CONNECTIONSTRING não configurada. Defina a connection string do Azure SQL.");
+    // Fallbacks: via config simples e env vars
+    azureSql = builder.Configuration["ConnectionStrings:AZURE_SQL_CONNECTIONSTRING"]
+        ?? Environment.GetEnvironmentVariable("ConnectionStrings__AZURE_SQL_CONNECTIONSTRING")
+        ?? Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING");
+}
+if (string.IsNullOrWhiteSpace(azureSql))
+{
+    throw new InvalidOperationException("ConnectionStrings:AZURE_SQL_CONNECTIONSTRING não configurada. Defina a connection string do Azure SQL (App Service: Connection strings ou Application settings).");
 }
 builder.Services.AddDbContext<Portfolio_V2.Infrastructure.AppDbContext>(options =>
     options.UseSqlServer(
         azureSql,
         sqlOptions =>
         {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorNumbersToAdd: null
-            );
+            sqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(60), errorNumbersToAdd: null);
         }
     )
 );
@@ -120,8 +152,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseStaticFiles();
+if (!app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(allowedOriginsCsv))
+{
+    app.UseCors("ProdCors");
+}
 app.MapControllers();
+app.MapGet("/healthz", () => Results.Ok("OK"));
 
 using (IServiceScope scope = app.Services.CreateScope())
 {
