@@ -1,6 +1,7 @@
 # Build results
 bin/
 obj/
+publish/
 
 # Visual Studio / Rider
 .vs/
@@ -15,9 +16,6 @@ obj/
 *.log
 
 # NuGet
-**/packages/*
-!**/packages/build/
-!**/packages/repositories.config
 *.nupkg
 
 # Others
@@ -29,14 +27,14 @@ Thumbs.db
 # Test results
 TestResults/
 
-# ASP.NET Scaffolding
+# ASP.NET Core
 ScaffoldingReadMe.txt
+wwwroot/uploads/
 
-# Publish outputs
-wwwroot/
-/dist/
-/node_modules/
-
-# Dotnet tools
-.dotnet-tools/
+# Secrets & local config
 **/appsettings.Development.json
+*.pfx
+secrets.json
+
+# Claude Code
+.claude/
