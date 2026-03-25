@@ -69,7 +69,7 @@ namespace Portfolio_V2.Infrastructure
                 var prop = entity.Property(e => e.Bullets)
                                  .HasColumnName("bullets");
              
-                prop.HasColumnType("nvarchar(max)")
+                prop.HasColumnType("text")
                     .HasConversion(stringArrayConverter)
                     .Metadata.SetValueComparer(stringArrayComparer);
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
@@ -216,7 +216,7 @@ namespace Portfolio_V2.Infrastructure
                 e.Property(x => x.Role).HasMaxLength(120).HasColumnName("role");
                 var trProp = e.Property(x => x.Bullets);
 
-                    trProp.HasColumnType("nvarchar(max)")
+                    trProp.HasColumnType("text")
                           .HasConversion(stringArrayConverter)
                           .Metadata.SetValueComparer(stringArrayComparer);
                 e.Property(x => x.CreatedAt).HasColumnName("created_at");

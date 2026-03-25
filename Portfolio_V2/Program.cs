@@ -97,11 +97,11 @@ if (string.IsNullOrWhiteSpace(azureSql))
     throw new InvalidOperationException("ConnectionStrings:AZURE_SQL_CONNECTIONSTRING não configurada. Defina a connection string do Azure SQL (App Service: Connection strings ou Application settings).");
 }
 builder.Services.AddDbContext<Portfolio_V2.Infrastructure.AppDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         azureSql,
-        sqlOptions =>
+        npgsqlOptions =>
         {
-            sqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(60), errorNumbersToAdd: null);
+            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(60), errorCodesToAdd: null);
         }
     )
 );
@@ -166,14 +166,7 @@ using (IServiceScope scope = app.Services.CreateScope())
     var strategy = db.Database.CreateExecutionStrategy();
     await strategy.ExecuteAsync(async () =>
     {
-        if (app.Environment.IsDevelopment())
-        {
-            db.Database.EnsureCreated();
-        }
-        else
-        {
-            db.Database.Migrate();
-        }
+        db.Database.EnsureCreated();
         await Portfolio_V2.Infrastructure.Seed.DatabaseSeeder.SeedAsync(db);
     });
 
