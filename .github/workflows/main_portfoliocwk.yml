@@ -30,9 +30,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
       - name: Download artifact
@@ -41,16 +38,10 @@ jobs:
           name: dotnet-app
           path: ./publish
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_515AF677889E4D19B6F156627FDBED86 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_71085C75B9794278838CA5CA86C37B21 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5E432D92FAB84CDFA994371ADDF3DC12 }}
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'Port-back'
           slot-name: 'Production'
           package: ./publish
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
