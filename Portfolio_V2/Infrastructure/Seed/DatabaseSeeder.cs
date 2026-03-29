@@ -208,6 +208,57 @@ namespace Portfolio_V2.Infrastructure.Seed
                 await db.SaveChangesAsync();
             }
 
+            if (!await db.Testimonials.AnyAsync())
+            {
+                var testimonials = new List<Testimonial>
+                {
+                    new Testimonial
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Leticia Cristina da Silva",
+                        Highlight = "Caio foi meu colega de trabalho por um bom tempo e sempre estava disposto a ajudar, me ensinando sobre o desenvolvimento e desmistificando conceitos complicados. Sua paciência e bom humor tornaram nossa comunicação muito mais fácil e divertida. Além disso, ele traz uma energia positiva e uma ética de trabalho que fazem toda a diferença na equipe. A forma como resolve problemas de maneira criativa e eficiente é realmente inspiradora. Recomendo o Caio de olhos fechados! Ele com certeza vai brilhar onde quer que vá.",
+                        CreatedAt = new DateTime(2024, 11, 4, 0, 0, 0, DateTimeKind.Utc)
+                    },
+                    new Testimonial
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Bruno Meredyk",
+                        Highlight = "Caio é uma pessoa comunicativa, com grande capacidade intelectual e capaz de resolver problemas de forma criativa e ágil. Sem dúvidas um ótimo profissional com quem tive o prazer de trabalhar e manter uma amizade!",
+                        CreatedAt = new DateTime(2024, 11, 4, 0, 0, 0, DateTimeKind.Utc)
+                    },
+                    new Testimonial
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Felipe Rocha",
+                        Highlight = "Tive o prazer de trabalhar no mesmo time como desenvolvedor React.js e C# com o Caio. É um ótimo desenvolvedor, não foge de desafios e tem muita vontade de aprender.",
+                        CreatedAt = new DateTime(2024, 11, 4, 0, 0, 0, DateTimeKind.Utc)
+                    },
+                    new Testimonial
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Ana Paula Pingitore",
+                        Highlight = "Admiração pelo seu tempo e dedicação enquanto trabalhávamos juntos. Sempre foi inspirador ver o quanto você se empenhava e estava disposto a ajudar quem precisasse, sem nunca se queixar ou hesitar em compartilhar seu conhecimento. É evidente o seu amor pela programação, e sua generosidade em ensinar e colaborar fazia uma enorme diferença para todos. Sucesso em tudo o que vier pela frente!",
+                        CreatedAt = new DateTime(2024, 11, 1, 0, 0, 0, DateTimeKind.Utc)
+                    },
+                    new Testimonial
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Isabella Avila de Oliveira",
+                        Highlight = "Caio é um profissional muito experiente, que possui uma mente criativa na resolução de problemas. Sempre proativo, não se contentava com um trabalho meia boca. Queria fazer direito. O Caio é uma pessoa incrível, gentil e dedicada, que gosta muito do que faz!",
+                        CreatedAt = new DateTime(2024, 11, 1, 0, 0, 0, DateTimeKind.Utc)
+                    },
+                    new Testimonial
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Helen Hoed Rodrigues",
+                        Highlight = "Tive o prazer de ter o Caio como dev exclusivo do suporte. Sempre de bom humor e disposto a ajudar, participava dos encontros com o cliente e auxiliava nas questões técnicas com muito tato. Atendia as demandas de forma pro ativa, com qualidade e agilidade. Foi muito bom trabalhar com ele na equipe.",
+                        CreatedAt = new DateTime(2024, 11, 6, 0, 0, 0, DateTimeKind.Utc)
+                    }
+                };
+                db.Testimonials.AddRange(testimonials);
+                await db.SaveChangesAsync();
+            }
+
             if (!await db.Set<KeyTaskBullet>().AnyAsync())
             {
                 var keyTasks = new List<KeyTaskBullet>
