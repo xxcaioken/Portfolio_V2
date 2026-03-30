@@ -8,6 +8,14 @@ namespace Portfolio_V2.Infrastructure.Seed
     {
         public static async Task SeedAsync(AppDbContext db)
         {
+            // Garante que o avatar aponta para o arquivo estático commitado no wwwroot
+            var aboutToFix = await db.AboutInfos.FirstOrDefaultAsync();
+            if (aboutToFix != null && aboutToFix.AvatarUrl != "/avatar.jpg")
+            {
+                aboutToFix.AvatarUrl = "/avatar.jpg";
+                await db.SaveChangesAsync();
+            }
+
             if (!await db.Users.AnyAsync())
             {
                 (string hash, string salt) = AuthService.CreatePasswordHash("admin123");
@@ -33,6 +41,7 @@ namespace Portfolio_V2.Infrastructure.Seed
                     Email = "cwkormives@gmail.com",
                     Linkedin = "https://www.linkedin.com/in/caio-kormives/",
                     Github = "https://github.com/xxcaioken",
+                    AvatarUrl = "/avatar.jpg",
                     FooterNote = "Desenvolvido com React & ASP.NET Core",
                     Socials =
                     [
